@@ -1,0 +1,1 @@
+//rutas de los comentarios - para desarrolarlo es similar al de users

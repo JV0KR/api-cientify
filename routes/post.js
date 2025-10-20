@@ -1,0 +1,1 @@
+//rutas de los post - para desarrolarlo es similar al de users

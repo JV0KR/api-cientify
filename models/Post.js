@@ -1,0 +1,1 @@
+//el cuerpo que tienen las publicaciones / post 
