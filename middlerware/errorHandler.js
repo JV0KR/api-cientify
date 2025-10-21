@@ -1,1 +1,0 @@
-//si ocurre un error avisa de que hubo un error
