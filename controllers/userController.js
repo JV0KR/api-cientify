@@ -43,6 +43,7 @@ exports.login = async (req, res, next) => {
   }
 };
 
+
 exports.getProfile = async (req, res, next) => {
   try {
     const user = req.user;
@@ -101,4 +102,14 @@ exports.unfollow = async (req, res, next) => {
 
     res.json({ message: 'Has dejado de seguir al usuario' });
   } catch (err) { next(err); }
+};
+
+exports.getAllUsers = async (req, res, next) => {
+  try {
+    
+    const users = await User.find().select('-password');
+    res.status(200).json(users);
+  } catch (err) {
+    next(err);
+  }
 };
