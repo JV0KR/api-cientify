@@ -11,7 +11,9 @@ const PostSchema = new Schema({
   author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   tags: [{ type: String }],
   published: { type: Boolean, default: false },
-  publishedAt: { type: Date }
+  publishedAt: { type: Date },
+  likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  guardados: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 }, {
   timestamps: true // createdAt y updatedAt automáticos
 });
