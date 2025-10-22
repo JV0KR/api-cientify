@@ -17,4 +17,8 @@ router.delete('/:id', auth, postCtrl.remove);
 // Si quisieras que solo admins hagan acciones específicas:
 //router.delete('/:id', auth, permit('admin'), postCtrl.remove);
 
+// Rutas para el like y guardar un post
+router.post('/:id/like', auth, postCtrl.toggleLike);
+router.post('/:id/save', auth, postCtrl.toggleSave);
+
 module.exports = router;
