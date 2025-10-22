@@ -129,3 +129,55 @@ exports.remove = async (req, res, next) => {
     return next(err);
   }
 };
+
+/**
+ * toggleLike - Agregar o quitar like a un post
+ */
+exports.toggleLike = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: 'Post no encontrado' });
+
+    const userId = req.user._id;
+    const index = post.likes.findIndex(id => id.equals(userId));
+
+    if (index === -1) {
+      post.likes.push(userId);
+      await post.save();
+      return res.json({ message: 'Like agregado', totalLikes: post.likes.length });
+    } else {
+      post.likes.splice(index, 1);
+      await post.save();
+      return res.json({ message: 'Like removido', totalLikes: post.likes.length });
+    }
+  } catch (err) {
+    console.error('postController.toggleLike error:', err);
+    next(err);
+  }
+};
+
+/**
+ * toggleSave - Guardar o quitar un post guardado
+ */
+exports.toggleSave = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: 'Post no encontrado' });
+
+    const userId = req.user._id;
+    const index = post.guardados.findIndex(id => id.equals(userId));
+
+    if (index === -1) {
+      post.guardados.push(userId);
+      await post.save();
+      return res.json({ message: 'Publicación guardada' });
+    } else {
+      post.guardados.splice(index, 1);
+      await post.save();
+      return res.json({ message: 'Guardado eliminado' });
+    }
+  } catch (err) {
+    console.error('postController.toggleSave error:', err);
+    next(err);
+  }
+};
