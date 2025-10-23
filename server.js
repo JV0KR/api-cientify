@@ -7,7 +7,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 const userRoutes = require('./routes/users');
 const postRoutes = require('./routes/posts');
-//const commentRoutes = require('./routes/comments');
+const commentRoutes = require('./routes/comments');
 
 const app = express();
 app.use(cors());
@@ -19,7 +19,7 @@ connectDB(process.env.MONGO_URI);
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
-//app.use('/api/comments', commentRoutes);
+app.use('/api/comments', commentRoutes);
 
 // Health
 app.get('/', (req, res) => res.send('API Cientify funcionando'));
