@@ -11,7 +11,7 @@ router.get('/:id', postCtrl.get);
 
 // Rutas protegidas: solo usuarios autenticados pueden crear/editar/eliminar
 router.post('/', auth, postCtrl.create);
-router.put('/:id', auth, postCtrl.update);
+router.put('/update', auth, postCtrl.update);
 router.delete('/:id', auth, postCtrl.remove);
 
 // Si quisieras que solo admins hagan acciones específicas:
