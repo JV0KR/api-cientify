@@ -10,6 +10,10 @@ exports.register = async (req, res, next) => {
   try {
     const { nombre, email, password, rol, bio, avatarUrl } = req.body;
     if (!nombre || !email || !password) return res.status(400).json({ message: 'Faltan datos' });
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'La contraseña debe tener al menos 8 caracteres' });
+    }
+
 
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'Email ya registrado' });
