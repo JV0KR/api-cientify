@@ -11,6 +11,9 @@ exports.create = async (req, res, next) => {
     const { title, content, subtitle, summary, tags, published, publishedAt } = req.body;
 
     if (!title || !content) return res.status(400).json({ message: 'Faltan datos: titulo y contenido son obligatorios' });
+    if (title.length < 5) {
+      return res.status(400).json({ message: 'El título debe tener al menos 5 caracteres' });
+    }
 
     const author = req.user ? req.user._id : req.body.author;
     if (!author) return res.status(400).json({ message: 'Falta autor (id) o debes estar autenticado' });
