@@ -11,6 +11,12 @@ exports.create = async (req, res, next) => {
   try {
     const { content, post } = req.body;
 
+    // Validación extra de contenido vacío o solo espacios
+    if (!content || content.trim() === '') {
+      return res.status(400).json({ message: 'El comentario no puede estar vacío' });
+    }
+
+
     if (!content || !post) {
       return res.status(400).json({ message: 'Faltan campos requeridos: content y post' });
     }
