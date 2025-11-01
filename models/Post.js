@@ -1,4 +1,3 @@
-//el cuerpo que tienen las publicaciones / post 
 // models/Post.js
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
@@ -13,21 +12,18 @@ const PostSchema = new Schema({
   published: { type: Boolean, default: false },
   publishedAt: { type: Date },
   likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  guardados: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+  guardados: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  fileUrl: { type: String } // ✅ Nuevo campo
 }, {
-  timestamps: true // createdAt y updatedAt automáticos
+  timestamps: true
 });
 
-// Asegurar updatedAt también en findOneAndUpdate / findByIdAndUpdate, esto es como un middleware
 PostSchema.pre('findOneAndUpdate', function(next) {
   const update = this.getUpdate();
   if (!update) return next();
   const now = new Date();
-  if (update.$set) {
-    update.$set.updatedAt = now;
-  } else {
-    update.updatedAt = now;
-  }
+  if (update.$set) update.$set.updatedAt = now;
+  else update.updatedAt = now;
   this.setUpdate(update);
   next();
 });
