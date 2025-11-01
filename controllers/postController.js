@@ -1,22 +1,32 @@
 //la lógica de las publicaciones
 // controllers/postController.js
 const Post = require('../models/Post');
+const path = require('path');
 
 /**
  * create - crear nuevo post
  * Si existe req.user se usa como author; si no, se requiere author en body.
+ * Ahora también permite adjuntar archivos (imagen, PDF, audio, video)
  */
 exports.create = async (req, res, next) => {
   try {
     const { title, content, subtitle, summary, tags, published, publishedAt } = req.body;
 
-    if (!title || !content) return res.status(400).json({ message: 'Faltan datos: titulo y contenido son obligatorios' });
-    if (title.length < 5) {
+    if (!title || !content)
+      return res.status(400).json({ message: 'Faltan datos: titulo y contenido son obligatorios' });
+    if (title.length < 5)
       return res.status(400).json({ message: 'El título debe tener al menos 5 caracteres' });
-    }
 
     const author = req.user ? req.user._id : req.body.author;
-    if (!author) return res.status(400).json({ message: 'Falta autor (id) o debes estar autenticado' });
+    if (!author)
+      return res.status(400).json({ message: 'Falta autor (id) o debes estar autenticado' });
+
+    // 🔹 Si se sube un archivo, construye la URL pública
+    let fileUrl = null;
+    if (req.file) {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    }
 
     const data = {
       title,
@@ -26,7 +36,8 @@ exports.create = async (req, res, next) => {
       tags,
       published: published || false,
       publishedAt: published ? (publishedAt || new Date()) : undefined,
-      author
+      author,
+      fileUrl // ✅ Nuevo campo agregado
     };
 
     const post = await Post.create(data);
@@ -83,6 +94,7 @@ exports.get = async (req, res, next) => {
 
 /**
  * update - actualizar post por id
+ * Si se incluye un nuevo archivo, reemplaza el anterior.
  */
 exports.update = async (req, res, next) => {
   try {
@@ -93,18 +105,25 @@ exports.update = async (req, res, next) => {
       updates.publishedAt = new Date();
     }
 
-    // Primer: buscar post para verificar permisos
+    // Buscar el post antes de modificarlo
     const postBefore = await Post.findById(req.params.id);
     if (!postBefore) return res.status(404).json({ message: 'Post no encontrado' });
 
-    // Verificar: autor o admin
-    // req.user viene de middleware auth y tiene rol y _id (sin password)
+    // Verificar permisos: solo autor o admin
     if (!req.user._id.equals(postBefore.author) && req.user.rol !== 'admin') {
       return res.status(403).json({ message: 'No tienes permisos para editar este post' });
     }
 
-    const post = await Post.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
-      .populate('author', 'nombre email rol avatarUrl');
+    // 🔹 Si hay un nuevo archivo, genera nueva URL
+    if (req.file) {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      updates.fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    }
+
+    const post = await Post.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+      runValidators: true
+    }).populate('author', 'nombre email rol avatarUrl');
 
     return res.json(post);
   } catch (err) {
