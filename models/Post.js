@@ -13,7 +13,8 @@ const PostSchema = new Schema({
   publishedAt: { type: Date },
   likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   guardados: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  fileUrl: { type: String } // ✅ Nuevo campo
+  fileUrl: { type: String },
+  hidden: { type: Boolean, default: false } // ✅ Campo para que admins puedan ocultar posts
 }, {
   timestamps: true
 });

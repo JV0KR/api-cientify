@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const commentController = require('../controllers/commentController');
-const { protect, auth } = require('../middleware/auth'); // si usas autenticación
+const { auth, permit } = require('../middleware/auth'); // si usas autenticación
 
 // =============================
 //   Crear un comentario
@@ -28,6 +28,7 @@ router.put('/update/:id', auth, commentController.update);
 
 // =============================
 //   Eliminar un comentario
+// ✅ Solo admins pueden eliminar comentarios de otros usuarios
 // =============================
 router.delete('/delete/:id', auth, commentController.remove);
 

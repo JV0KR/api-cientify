@@ -1,0 +1,2 @@
+# Placeholder to ensure `uploads/` directory exists in the repository.
+# Do NOT commit uploaded files. All runtime uploads are ignored by .gitignore.

@@ -137,3 +137,9 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Uploads: keep the directory tracked but ignore uploaded files
+# - ignore everything under uploads/
+# - allow the placeholder file `uploads/.gitkeep` so the folder stays in the repo
+/uploads/*
+!/uploads/.gitkeep

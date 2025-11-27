@@ -112,15 +112,22 @@ exports.update = async (req, res, next) => {
 
 /**
  * remove - Eliminar comentario
- * Solo el autor o admin puede eliminarlo
+ * ✅ Solo admins pueden eliminar comentarios de otros usuarios
  */
 exports.remove = async (req, res, next) => {
   try {
     const commentBefore = await Comment.findById(req.params.id);
     if (!commentBefore) return res.status(404).json({ message: 'Comentario no encontrado' });
 
-    if (!req.user._id.equals(commentBefore.author) && req.user.rol !== 'admin') {
-      return res.status(403).json({ message: 'No tienes permisos para eliminar este comentario' });
+    // Si es admin, puede eliminar cualquier comentario
+    if (req.user.rol === 'admin') {
+      await Comment.findByIdAndDelete(req.params.id);
+      return res.json({ message: 'Comentario eliminado' });
+    }
+
+    // Si no es admin, solo puede eliminar su propio comentario
+    if (!req.user._id.equals(commentBefore.author)) {
+      return res.status(403).json({ message: 'Solo admins pueden eliminar comentarios de otros usuarios' });
     }
 
     await Comment.findByIdAndDelete(req.params.id);

@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const userCtrl = require('../controllers/userController');
 const { auth, permit } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 router.post('/register', userCtrl.register);
 router.post('/login', userCtrl.login);
 router.get('/profile', auth, userCtrl.getProfile);
-router.put('/profile', auth, userCtrl.updateProfile);
+router.put('/profile', auth, upload.single('avatar'), userCtrl.updateProfile);
 router.delete('/delete', auth, userCtrl.deleteAccount);
 
 // follow/unfollow

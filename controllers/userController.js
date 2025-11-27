@@ -57,8 +57,16 @@ exports.getProfile = async (req, res, next) => {
 
 exports.updateProfile = async (req, res, next) => {
   try {
-    const updates = req.body;
+    // req.body puede ser undefined si el cliente envía multipart/form-data
+    const updates = req.body || {};
     if (updates.password) delete updates.password; // no permitir cambio de password aquí (mejor endpoint dedicado)
+
+    // Si se subió un archivo (avatar), construir la URL pública
+    if (req.file) {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      updates.avatarUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    }
+
     const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true }).select('-password');
     res.json(user);
   } catch (err) { next(err); }
