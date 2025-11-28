@@ -3,19 +3,19 @@ const User = require('../models/User');
 
 const auth = async (req, res, next) => {
   try {
-    const header = req.headers.authorization;
-    if (!header || !header.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'No autorizado' });
-    }
-    const token = header.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: "No token" });
+
+    const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     const user = await User.findById(decoded.id).select('-password');
-    if (!user) return res.status(401).json({ message: 'Usuario no existe' });
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
     req.user = user;
     next();
   } catch (err) {
-    console.error(err);
-    res.status(401).json({ message: 'Token inválido' });
+    return res.status(401).json({ message: "Token inválido" });
   }
 };
 
@@ -44,25 +44,6 @@ const permit = (...roles) => (req, res, next) => {
   next();
 };
 
-exports.auth = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: "No token" });
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Cargar usuario REAL
-    const user = await User.findById(decoded.id);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-
-    req.user = user;
-    next();
-
-  } catch (err) {
-    return res.status(401).json({ message: "Token inválido" });
-  }
-};
 
 module.exports = { auth, authOptional, permit };
 

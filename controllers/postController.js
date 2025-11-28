@@ -153,53 +153,39 @@ exports.remove = async (req, res, next) => {
 };
 
 /**
- * togglePublish - Cambiar estado published de un post (solo admin)
+ * toggleLike - Agregar o quitar like a un post
  */
 exports.togglePublish = async (req, res, next) => {
   try {
     const { published } = req.body;
-    if (typeof published !== 'boolean') {
-      return res.status(400).json({ message: 'Campo published debe ser boolean' });
-    }
-    const post = await Post.findByIdAndUpdate(
-      req.params.id,
-      { published },
-      { new: true, runValidators: true }
-    ).populate('author', 'nombre email rol avatarUrl');
-    if (!post) return res.status(404).json({ message: 'Post no encontrado' });
-    return res.json(post);
-  } catch (err) {
-    console.error('postController.togglePublish error:', err);
-    return next(err);
-  }
-};
 
-/**
- * toggleHidden - Ocultar o mostrar un post (solo admins)
- */
-exports.toggleHidden = async (req, res, next) => {
-  try {
-    if (req.user.rol !== 'admin') {
-      return res.status(403).json({ message: 'Solo admins pueden ocultar/mostrar contenido' });
+    if (typeof published !== "boolean") {
+      return res.status(400).json({ message: "El campo 'published' debe ser booleano" });
     }
+
     const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: 'Post no encontrado' });
-    post.hidden = !post.hidden;
+    if (!post) return res.status(404).json({ message: "Post no encontrado" });
+
+    // Solo admin puede llegar aquí porque la ruta ya tiene permit('admin')
+    post.published = published;
+    post.publishedAt = published ? new Date() : null;
+
     await post.save();
+
     return res.json({
-      message: post.hidden ? 'Publicación ocultada' : 'Publicación visible',
-      hidden: post.hidden
+      message: `Post ${published ? "publicado" : "ocultado"}`,
+      published: post.published,
+      publishedAt: post.publishedAt
     });
+
   } catch (err) {
-    console.error('postController.toggleHidden error:', err);
-    return next(err);
+    console.error("togglePublish error:", err);
+    next(err);
   }
 };
 
-/**
- * toggleLike - Agregar o quitar like a un post
- */
-exports.toggleLike = async (req, res, next) => {
+
+  exports.toggleLike = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: 'Post no encontrado' });

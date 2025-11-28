@@ -25,15 +25,15 @@ router.get('/list', authOptional, postCtrl.list);
 router.get('/findPost/:id', authOptional, postCtrl.get);
 
 //  Actualizar post (autor o admin)
-router.put('/update/:id', 
-  auth, 
+router.put('/update/:id',
+  auth,
   requireOwnerOrAdmin(async (req) => {
     const Post = require('../models/Post');
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).select('author');
     if (!post) throw new Error('Post no encontrado');
     return post.author;
   }),
-  upload.single('file'), 
+  upload.single('file'),
   postCtrl.update
 );
 
@@ -45,11 +45,17 @@ router.delete('/remove/:id',
 );
 
 //  Toggle publish (ocultar/mostrar) - solo admin
-router.put('/:id/publish', 
-  auth, 
-  permit('admin'), 
+router.put('/:id/publish',
+  auth,
+  requireOwnerOrAdmin(async (req) => {
+    const Post = require('../models/Post');
+    const post = await Post.findById(req.params.id).select('author');
+    if (!post) throw new Error('Post no encontrado');
+    return post.author;
+  }),
   postCtrl.togglePublish
 );
+
 
 // Agregar o quitar "like" a un post
 router.post('/:id/like', auth, postCtrl.toggleLike);
