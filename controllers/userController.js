@@ -84,43 +84,125 @@ exports.follow = async (req, res, next) => {
   try {
     const targetId = req.params.id;
     const me = req.user;
-    if (me._id.equals(targetId)) return res.status(400).json({ message: 'No puedes seguirte a ti mismo' });
+
+    if (me._id.equals(targetId)) {
+      return res.status(400).json({ message: 'No puedes seguirte a ti mismo' });
+    }
 
     const target = await User.findById(targetId);
     if (!target) return res.status(404).json({ message: 'Usuario objetivo no existe' });
 
+    // Evitar duplicados
     if (!target.seguidores.includes(me._id)) {
       target.seguidores.push(me._id);
       me.siguiendo.push(target._id);
+
       await target.save();
       await me.save();
     }
 
-    res.json({ message: 'Ahora sigues al usuario' });
-  } catch (err) { next(err); }
+    res.json({
+      message: 'Ahora sigues al usuario',
+      target: {
+        id: target._id,
+        nombre: target.nombre,
+        followersCount: target.seguidores.length
+      },
+      me: {
+        id: me._id,
+        siguiendoCount: me.siguiendo.length
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
 };
+
 
 exports.unfollow = async (req, res, next) => {
   try {
     const targetId = req.params.id;
     const me = req.user;
+
     const target = await User.findById(targetId);
     if (!target) return res.status(404).json({ message: 'Usuario objetivo no existe' });
 
     target.seguidores = target.seguidores.filter(id => !id.equals(me._id));
     me.siguiendo = me.siguiendo.filter(id => !id.equals(target._id));
+
     await target.save();
     await me.save();
 
-    res.json({ message: 'Has dejado de seguir al usuario' });
-  } catch (err) { next(err); }
+    res.json({
+      message: 'Has dejado de seguir al usuario',
+      target: {
+        id: target._id,
+        nombre: target.nombre,
+        followersCount: target.seguidores.length
+      },
+      me: {
+        id: me._id,
+        siguiendoCount: me.siguiendo.length
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
 };
+
 
 exports.getAllUsers = async (req, res, next) => {
   try {
     
     const users = await User.find().select('-password');
     res.status(200).json(users);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Buscar usuarios
+exports.searchUsers = async (req, res) => {
+  try {
+    const loggedUserId = req.user.id; // viene del JWT
+    const loggedUser = await User.findById(loggedUserId).select('siguiendo');
+
+    const query = {};
+    if (req.query.rol) query.rol = req.query.rol;
+    if (req.query.q) query.nombre = { $regex: req.query.q, $options: 'i' };
+
+    const usuarios = await User.find(query)
+      .select('-password')
+      .lean();
+
+ 
+    const response = usuarios.map(u => ({
+      ...u,
+      followersCount: u.seguidores?.length || 0,
+      followingCount: u.siguiendo?.length || 0,
+      isFollowing: loggedUser.siguiendo.includes(u._id.toString())
+    }));
+
+    res.json({
+      total: response.length,
+      usuarios: response
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error en búsqueda' });
+  }
+};
+
+
+
+// Obtener usuario por id
+exports.getUserById = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    res.json(user);
   } catch (err) {
     next(err);
   }
