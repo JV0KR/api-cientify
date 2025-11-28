@@ -10,11 +10,12 @@ router.get('/profile', auth, userCtrl.getProfile);
 router.put('/profile', auth, upload.single('avatar'), userCtrl.updateProfile);
 router.delete('/delete', auth, userCtrl.deleteAccount);
 
-// follow/unfollow
-router.post('/follow/:id', auth, userCtrl.follow);
-router.delete('/unfollow/:id', auth, userCtrl.unfollow);
+router.get('/search', auth, userCtrl.searchUsers);
+router.get('/:id', auth, userCtrl.getUserById);
 
-//Solo admins
+router.post('/:id/follow', auth, userCtrl.follow);
+router.post('/:id/unfollow', auth, userCtrl.unfollow);
+
 router.get('/', auth, permit('admin'), userCtrl.getAllUsers);
 
 module.exports = router;
